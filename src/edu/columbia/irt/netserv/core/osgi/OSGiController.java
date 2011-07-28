@@ -1,6 +1,9 @@
-package edu.columbia.irt.netserv.controller;
+package edu.columbia.irt.netserv.core.osgi;
 
+import edu.columbia.irt.netserv.core.backbone.Service;
+import edu.columbia.irt.netserv.core.backbone.ServiceException;
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.net.*;
 import java.util.*;
 import java.util.logging.*;
@@ -11,9 +14,11 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Version;
 
-import edu.columbia.irt.netserv.controller.core.service.ServiceEvent;
-import edu.columbia.irt.netserv.controller.core.service.ServiceListener;
-import edu.columbia.irt.netserv.controller.core.service.Util;
+import edu.columbia.irt.netserv.core.backbone.ServiceEvent;
+import edu.columbia.irt.netserv.core.backbone.ServiceListener;
+import edu.columbia.irt.netserv.core.backbone.Util;
+import java.lang.reflect.Method;
+import org.osgi.framework.Constants;
 
 public class OSGiController implements Runnable {
 
@@ -26,6 +31,9 @@ public class OSGiController implements Runnable {
             new HashSet<ServiceListener>();
     public static final HashMap<Long, Properties> mapServiceProps =
             new HashMap<Long, Properties>();
+    // for EXECUTE command - keeps track of installed service
+    static final HashMap<String, Bundle> serviceMap =
+            new HashMap<String, Bundle>();
     // OSGi Equinox Framework instance
     private Framework framework;
     // control port 
@@ -126,7 +134,20 @@ public class OSGiController implements Runnable {
             logger.log(Level.INFO, "headers: {0}", m);
 
             try {
-                if (command.equals("SETUP")) {
+                if (command.equals("EXECUTE")) {
+                    // check if the service is already installed.
+                    Bundle service = serviceMap.get(arg);
+                    if (service.getState() == Bundle.ACTIVE) {
+                        try {
+                            logger.log(Level.INFO, "Bundle {0} found in ACTIVE state", arg);
+                            executeModule(service, m, sock.getOutputStream());
+                            out.printf("\n");
+                        } catch (ClassNotFoundException ex) {
+                            out.printf("Service class not found :  %s\n\n", ex.toString());
+                        }
+                    }
+
+                } else if (command.equals("SETUP")) {
                     int ttl = 5 * 60;
                     String ttlStr = m.get("ttl");
                     if (ttlStr != null) {
@@ -153,8 +174,40 @@ public class OSGiController implements Runnable {
                 }
             } catch (BundleException ex) {
                 out.printf("%d\n", -1); // failure
+                logger.log(Level.SEVERE, "Bundle exception:", ex);
                 out.printf("BundleException: type=%d\n\n", ex.getType());
             }
+        }
+    }
+
+    synchronized void executeModule(Bundle bundle, HashMap<String, String> headers,
+            OutputStream out)
+            throws ClassNotFoundException {
+
+        String activator = (String) bundle.getHeaders().get(Constants.BUNDLE_ACTIVATOR);
+        Class activatorClass = bundle.loadClass(activator);
+        try {
+            //Service serviceObject;
+            Object serviceObject = activatorClass.newInstance();
+            Object param = null;
+            if (headers.get("args") != null) {
+                param = headers.get("args");
+            }
+            Method method = activatorClass.getMethod("execute", new Class[]{OutputStream.class, Object.class});
+            method.invoke(serviceObject, new Object[]{out, param});
+
+        } catch (InvocationTargetException ex) {
+            Logger.getLogger(OSGiController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchMethodException ex) {
+            Logger.getLogger(OSGiController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        } catch (SecurityException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        } catch (IllegalArgumentException ex) {
+            logger.log(Level.SEVERE, null, ex);
         }
     }
 
@@ -171,10 +224,11 @@ public class OSGiController implements Runnable {
      */
     synchronized void setupModule(String moduleID, String url, int ttl,
             HashMap<String, String> headers) throws BundleException {
+
+        logger.info("Inside setupModule method");
         if (url == null || url.length() == 0) {
             throw new BundleException("URL is missing");
         }
-
         BundleContext context = framework.getBundleContext();
         Bundle bundle = context.installBundle(url);
         Properties props = new Properties();
@@ -203,7 +257,11 @@ public class OSGiController implements Runnable {
         }
 
         bundle.start();
+        serviceMap.put(moduleID, bundle);
+
         logger.log(Level.INFO, "{0} bundle installed and started..", moduleID);
+        bundle.getState();
+
         // check installed bundled ID and module ID passed
         String name = bundle.getSymbolicName();
         Version version = bundle.getVersion();
@@ -319,6 +377,7 @@ public class OSGiController implements Runnable {
                 if (version == null || version.equals(b.getVersion().toString())) {
                     if (b.getState() != Bundle.UNINSTALLED) {
                         removeModule(b);
+                        serviceMap.remove(moduleID);
                         return;
                     }
                 }

@@ -1,4 +1,4 @@
-package edu.columbia.irt.netserv.controller.core.service;
+package edu.columbia.irt.netserv.core.backbone;
 
 public class ServiceEvent {
 

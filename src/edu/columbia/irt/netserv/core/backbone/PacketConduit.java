@@ -1,4 +1,4 @@
-package edu.columbia.irt.netserv.controller.core.service;
+package edu.columbia.irt.netserv.core.backbone;
 
 import java.util.logging.*;
 import java.nio.ByteBuffer;
@@ -60,7 +60,7 @@ public class PacketConduit implements PacketDispatcher {
      * This method is called by native C++ code
      * @param buf 
      */
-    private static void injectPkt(ByteBuffer buf) {
+    private static void injectPacket(ByteBuffer buf) {
         dispatcher.dispatchPacket(buf);
     }
 }

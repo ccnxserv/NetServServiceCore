@@ -1,4 +1,4 @@
-package edu.columbia.irt.netserv.controller;
+package edu.columbia.irt.netserv.core.osgi;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -10,9 +10,9 @@ import org.osgi.framework.*;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 
-public class NetServJavaController {
+public class Launch {
 
-    static final boolean DEBUG = true;
+    static final boolean DEBUG = false;
     static final Logger logger = Logger.getLogger("edu.columbia.irt.netserv.controller");
 
     public static void main(String[] args) throws Exception {
@@ -62,9 +62,13 @@ public class NetServJavaController {
 
         BundleContext context = framework.getBundleContext();
         for (String bundle : bundlesToInstall) {
+            String[] bundleId = bundle.split("::");
             logger.log(Level.INFO, "Installing {0} bundle ..", bundle);
-            Bundle b = context.installBundle("file:" + base + "/" + bundle.trim());
+            Bundle b = context.installBundle("file:" + base + "/" + bundleId[0].trim());
             b.start();
+            if(bundleId.length > 1){
+                OSGiController.serviceMap.put(bundleId[1], b);
+            }
         }
         framework.start();
         return framework;

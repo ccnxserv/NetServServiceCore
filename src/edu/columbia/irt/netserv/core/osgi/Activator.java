@@ -1,7 +1,7 @@
-package edu.columbia.irt.netserv.controller.core;
+package edu.columbia.irt.netserv.core.osgi;
 
-import edu.columbia.irt.netserv.controller.core.service.Util;
-import edu.columbia.irt.netserv.controller.core.service.PacketConduit;
+import edu.columbia.irt.netserv.core.backbone.Util;
+import edu.columbia.irt.netserv.core.backbone.PacketConduit;
 import java.util.Properties;
 import java.util.logging.*;
 
@@ -20,7 +20,7 @@ public class Activator implements BundleActivator {
     public void start(BundleContext context) {
         Properties props = new Properties();
         props.put("version", "1.0");
-        props.put("protocol", "udp,tcp,icmp");
+        props.put("protocol", "udp, tcp, icmp");
 
         logger.log(Level.INFO, "registering PacketConduit with {0}", props);
         PacketConduit pc = new PacketConduit();

@@ -1,10 +1,12 @@
-package edu.columbia.irt.netserv.controller.core.service;
+package edu.columbia.irt.netserv.core.osgi;
 
 import java.util.*;
 import java.util.logging.*;
 
 import org.osgi.framework.BundleContext;
-import edu.columbia.irt.netserv.controller.OSGiController;
+import edu.columbia.irt.netserv.core.osgi.OSGiController;
+import edu.columbia.irt.netserv.core.backbone.ServiceListener;
+import edu.columbia.irt.netserv.core.backbone.Util;
 
 public class ServiceManager {
 
