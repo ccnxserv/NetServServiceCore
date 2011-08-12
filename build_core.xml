@@ -3,13 +3,13 @@
     <property name="version" value="0.0.1" />
     <property name="src" location="src" />
     <property name="build" location="build" />
-    <property name="dist" location="/netserv-lib" />
+    <property name="dist" location="/repository" />
 
     <path id="classpath.buildtime">
-        <pathelement location="./lib/servlet-api-2.5.jar" />
-        <pathelement location="./lib/jetty-util-6.1.24.jar"/>
-        <pathelement location="./lib/jetty-6.1.24.jar" />
-        <pathelement location="./lib/org.eclipse.osgi.jar" />
+        <pathelement location="/repository/servlet-api-2.5.jar" />
+        <pathelement location="/repository/jetty-util-6.1.24.jar"/>
+        <pathelement location="/repository/jetty-6.1.24.jar" />
+        <pathelement location="/repository/org.eclipse.osgi.jar" />
     </path>
 
     <target name="init" depends="clean">

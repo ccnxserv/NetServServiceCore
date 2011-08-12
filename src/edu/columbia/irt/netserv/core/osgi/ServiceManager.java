@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.logging.*;
 
 import org.osgi.framework.BundleContext;
-import edu.columbia.irt.netserv.core.osgi.OSGiController;
+import edu.columbia.irt.netserv.core.osgi.Controller;
 import edu.columbia.irt.netserv.core.backbone.ServiceListener;
 import edu.columbia.irt.netserv.core.backbone.Util;
 
@@ -17,8 +17,8 @@ public class ServiceManager {
     }
 
     public static Properties retrieveProperties(BundleContext context) {
-        synchronized (OSGiController.mapServiceProps) {
-            Properties props = OSGiController.mapServiceProps.get(context.getBundle().getBundleId());
+        synchronized (Controller.mapServiceProps) {
+            Properties props = Controller.mapServiceProps.get(context.getBundle().getBundleId());
             if (props != null) {
                 return (Properties) props.clone();
             } else {
@@ -28,23 +28,23 @@ public class ServiceManager {
     }
 
     public static void addModuleListener(ServiceListener listener) {
-        synchronized (OSGiController.serviceListeners) {
-            OSGiController.serviceListeners.add(listener);
+        synchronized (Controller.serviceListeners) {
+            Controller.serviceListeners.add(listener);
         }
         logListenerList();
     }
 
     public static void removeModuleListener(ServiceListener listener) {
-        synchronized (OSGiController.serviceListeners) {
-            OSGiController.serviceListeners.remove(listener);
+        synchronized (Controller.serviceListeners) {
+            Controller.serviceListeners.remove(listener);
         }
         logListenerList();
     }
 
     public static void logListenerList() {
         StringBuilder s = new StringBuilder("ModuleListener list:");
-        synchronized (OSGiController.serviceListeners) {
-            for (ServiceListener l : OSGiController.serviceListeners) {
+        synchronized (Controller.serviceListeners) {
+            for (ServiceListener l : Controller.serviceListeners) {
                 s.append("\n  ").append(l);
             }
         }
