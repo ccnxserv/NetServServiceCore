@@ -79,10 +79,11 @@ public class Launch {
 
         BundleContext context = framework.getBundleContext();
         Bundle[] cache = context.getBundles();
-        
+
         for (Bundle b : cache) {
-            if(b.getBundleId() != framework.getBundleId())
+            if (b.getBundleId() != framework.getBundleId()) {
                 b.uninstall();
+            }
         }
         for (String bundle : bundlesToInstall) {
             String[] bundleId = bundle.split("::");
