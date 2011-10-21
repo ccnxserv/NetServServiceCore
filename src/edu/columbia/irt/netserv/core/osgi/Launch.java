@@ -33,7 +33,7 @@ public class Launch {
         String[] bundles = prop.getProperty("initial-bundles").split(",");
          */
 
-        String base = "/repository";
+        String base = "/node-repo";
         String[] bundles = {"servlet-api-2.5.jar", "jetty-util-6.1.24.jar",
             "jetty-6.1.24.jar", "netserv-service-core-0.0.1.jar"};
 
